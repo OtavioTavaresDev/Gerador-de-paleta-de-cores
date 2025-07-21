@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Paleta de Cores</title>
+    <!-- Carregando o Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carregando a fonte Inter do Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo customizado para usar a fonte Inter como padrão */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Melhora a aparência do seletor de cores */
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Container Principal -->
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Cabeçalho -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Gerador de Paleta de Cores</h1>
+            <p class="mt-2 text-gray-600">Crie sua paleta de cores personalizada.</p>
+        </header>
+
+        <!-- Seção de Controles -->
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- Opção 1: Paleta Tailwind -->
+                <div class="flex flex-col space-y-3">
+                    <label for="tailwind-colors" class="font-semibold text-gray-700">1. Escolha uma cor da paleta</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="tailwind-colors" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <!-- Opções de cores serão inseridas via JS -->
+                        </select>
+                        <button id="add-tailwind-color-btn" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opção 2: Seletor Manual -->
+                <div class="flex flex-col space-y-3">
+                    <label for="manual-color-picker" class="font-semibold text-gray-700">2. Ou escolha uma cor manual</label>
+                    <div class="flex items-center space-x-2">
+                        <div class="relative w-full">
+                           <input id="manual-color-display" type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition pl-16" value="#34D399">
+                           <input type="color" id="manual-color-picker" value="#34D399" class="absolute left-0 top-0 m-0">
+                        </div>
+                        <button id="add-manual-color-btn" class="bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Seção de Exibição da Paleta -->
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Sua Paleta</h2>
+            <div id="palette-display" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                <!-- Botões de cor gerados aparecerão aqui -->
+            </div>
+            <div id="empty-state" class="text-center py-12">
+                <p class="text-gray-500">Sua paleta está vazia. Adicione cores acima para começar!</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMENTOS DO DOM ---
+            const tailwindColorsSelect = document.getElementById('tailwind-colors');
+            const addTailwindColorBtn = document.getElementById('add-tailwind-color-btn');
+            const manualColorPicker = document.getElementById('manual-color-picker');
+            const manualColorDisplay = document.getElementById('manual-color-display');
+            const addManualColorBtn = document.getElementById('add-manual-color-btn');
+            const paletteDisplay = document.getElementById('palette-display');
+            const emptyState = document.getElementById('empty-state');
+
+            // --- DADOS DAS CORES (ESTILO TAILWIND) ---
+            const tailwindColors = {
+                "Slate 500": "#64748b", "Gray 500": "#6b7280", "Zinc 500": "#71717a", "Neutral 500": "#737373", "Stone 500": "#78716c",
+                "Red 500": "#ef4444", "Orange 500": "#f97316", "Amber 500": "#f59e0b", "Yellow 500": "#eab308", "Lime 500": "#84cc16",
+                "Green 500": "#22c55e", "Emerald 500": "#10b981", "Teal 500": "#14b8a6", "Cyan 500": "#06b6d4", "Sky 500": "#0ea5e9",
+                "Blue 500": "#3b82f6", "Indigo 500": "#6366f1", "Violet 500": "#8b5cf6", "Purple 500": "#a855f7", "Fuchsia 500": "#d946ef",
+                "Pink 500": "#ec4899", "Rose 500": "#f43f5e"
+            };
+
+            // --- FUNÇÕES ---
+
+            /**
+             * Popula o dropdown com as cores da paleta Tailwind.
+             */
+            function populateColorSelect() {
+                for (const [name, hex] of Object.entries(tailwindColors)) {
+                    const option = document.createElement('option');
+                    option.value = hex;
+                    option.textContent = name;
+                    tailwindColorsSelect.appendChild(option);
+                }
+            }
+
+            /**
+             * Determina se o texto deve ser preto ou branco com base na cor de fundo.
+             * @param {string} hexcolor - A cor de fundo em formato hexadecimal (ex: "#RRGGBB").
+             * @returns {string} Retorna 'text-white' ou 'text-black'.
+             */
+            function getContrastingTextColor(hexcolor) {
+                if (hexcolor.startsWith('#')) {
+                    hexcolor = hexcolor.slice(1);
+                }
+                const r = parseInt(hexcolor.substr(0, 2), 16);
+                const g = parseInt(hexcolor.substr(2, 2), 16);
+                const b = parseInt(hexcolor.substr(4, 2), 16);
+                // Fórmula de luminância YIQ
+                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                return (yiq >= 128) ? 'text-black' : 'text-white';
+            }
+            
+            /**
+             * Atualiza o estado visual da página (mostra/esconde a mensagem de paleta vazia).
+             */
+            function updateUI() {
+                if (paletteDisplay.children.length > 0) {
+                    emptyState.classList.add('hidden');
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            }
+
+            /**
+             * Cria e adiciona um novo botão de cor à galeria.
+             * @param {string} colorValue - O valor da cor (hex).
+             * @param {string} colorName - O nome a ser exibido no botão.
+             */
+            function createColorButton(colorValue, colorName) {
+                const textColorClass = getContrastingTextColor(colorValue);
+
+                const colorCard = document.createElement('div');
+                colorCard.className = `p-4 rounded-xl shadow-md flex flex-col justify-center items-center h-28 transition-transform duration-200 hover:scale-105 hover:shadow-lg`;
+                colorCard.style.backgroundColor = colorValue;
+
+                const nameElement = document.createElement('span');
+                nameElement.className = `font-bold text-lg ${textColorClass}`;
+                nameElement.textContent = colorName;
+                
+                const hexElement = document.createElement('span');
+                hexElement.className = `text-sm font-mono mt-1 ${textColorClass} opacity-80`;
+                hexElement.textContent = colorValue.toUpperCase();
+
+                // Se o nome e o valor hex forem iguais, mostra apenas um.
+                if (colorName.toLowerCase() === colorValue.toLowerCase()) {
+                    colorCard.appendChild(nameElement);
+                } else {
+                    colorCard.appendChild(nameElement);
+                    colorCard.appendChild(hexElement);
+                }
+
+                paletteDisplay.appendChild(colorCard);
+                updateUI();
+            }
+
+            // --- EVENT LISTENERS ---
+
+            // Adiciona cor da paleta Tailwind
+            addTailwindColorBtn.addEventListener('click', () => {
+                const selectedOption = tailwindColorsSelect.options[tailwindColorsSelect.selectedIndex];
+                const colorValue = selectedOption.value;
+                const colorName = selectedOption.textContent;
+                createColorButton(colorValue, colorName);
+            });
+
+            // Adiciona cor do seletor manual
+            addManualColorBtn.addEventListener('click', () => {
+                const colorValue = manualColorPicker.value;
+                createColorButton(colorValue, colorValue);
+            });
+
+            // Sincroniza o input de texto com o seletor de cores
+            manualColorPicker.addEventListener('input', (e) => {
+                manualColorDisplay.value = e.target.value.toUpperCase();
+            });
+
+            // Sincroniza o seletor de cores com o input de texto
+            manualColorDisplay.addEventListener('change', (e) => {
+                manualColorPicker.value = e.target.value;
+            });
+
+
+            // --- INICIALIZAÇÃO ---
+            populateColorSelect();
+            updateUI();
+        });
+    </script>
+</body>
+</html>
